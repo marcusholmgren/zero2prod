@@ -1,3 +1,5 @@
+use sqlx::{PgConnection, Connection};
+use zero2prod::configuration::get_configuration;
 use std::net::TcpListener;
 
 // `tokio::test` is the testing equivalent of `tokio::main`.
@@ -28,6 +30,11 @@ async fn health_check_works() {
 async fn subscribe_returns_a_200_for_valid_form_data() {
     // Arrange
     let address = spawn_app();
+    let configuration = get_configuration().expect("Failed to read configuration.");
+    let connection_string = configuration.database.connection_string();
+    let _connection = PgConnection::connect(&connection_string)
+        .await
+        .expect("Failed to connect to Postgres.");
     let client = reqwest::Client::new();
 
     // Act
@@ -83,7 +90,7 @@ fn spawn_app() -> String {
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind address");
     // we retrieve the port number to use by the OS
     let port = listener.local_addr().unwrap().port();
-    let server = zero2prod::run(listener).expect("Failed to start server");
+    let server = zero2prod::startup::run(listener).expect("Failed to start server");
     // Launch the server as a background task
     // tokio::spawn returns a handle to the spawned future,
     // but we have no use for it here, hence the non-binding let

@@ -23,6 +23,7 @@ name = "zero2prod"
 
 [dependencies]
 actix-web = "4.0.0"
+config = "0.13"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 # We need the optional `derive` feature to use `serde`'s procedural macros:
@@ -35,3 +36,17 @@ serde = { version = "1", features = ["derive"] }
 # They do not get included in the final application binary!
 [dev-dependencies]
 reqwest = "0.11"
+
+# Using table-like toml syntax to avoid a super-long line!
+[dependencies.sqlx]
+version = "0.6"
+default-features = false
+features = [
+    "runtime-tokio-rustls",
+    "macros",
+    "postgres",
+    "uuid",
+    "chrono",
+    "migrate"
+]
+
