@@ -9,6 +9,15 @@ pub struct FormData {
     email: String,
 }
 
+///
+///
+/// # Arguments
+///
+/// * `form`: FormData request
+/// * `pool`: SQLx connection pool
+///
+/// returns: HttpResponse<BoxBody>
+///
 pub async fn subscribe(form: web::Form<FormData>, pool: web::Data<PgPool>) -> HttpResponse {
     match sqlx::query!(
         r#"
