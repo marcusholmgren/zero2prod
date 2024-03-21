@@ -27,6 +27,8 @@ config = "0.13"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 uuid = { version = "1", features = ["v4"]}
 chrono = { version = "0.4.35", default-features = false, features = ["clock"]}
+log = "0.4.21"
+env_logger = "0.11.3"
 
 # We need the optional `derive` feature to use `serde`'s procedural macros:
 # `#[derive(Serialize)]` and `#[derive(Deserialize)]`.
