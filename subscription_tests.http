@@ -1,0 +1,13 @@
+@host = http://localhost:8000
+
+###
+# Check application health
+GET {{host}}/health_check
+
+
+###
+# Add subscriber
+POST {{host}}/subscriptions
+Content-Type: application/x-www-form-urlencoded
+
+name=marcus&email=snarcus.testson@home.se
