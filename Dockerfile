@@ -1,36 +1,30 @@
-# Builder stage
-FROM rust as builder
-
+FROM lukemathwalker/cargo-chef:latest-rust-1 AS chef
 WORKDIR /app
 
-RUN apt update && apt install lld clang -y
-
+FROM chef AS planner
 COPY . .
-#COPY --chown=app:app . /app
+RUN cargo chef prepare --recipe-path recipe.json
 
-ENV DOCKER_CONTENT_TRUST=1
+FROM chef AS builder
+COPY --from=planner /app/recipe.json recipe.json
+# Build dependencies - this is the caching Docker layer!
+RUN cargo chef cook --release --recipe-path recipe.json
+# Build application
+COPY . .
 ENV SQLX_OFFLINE true
+RUN cargo build --release --bin zero2prod
 
-RUN cargo build --release
-
-# Runtime stage
-FROM debian:bullseye-slim as runtime
-
+# We do not need the Rust toolchain to run the binary!
+FROM debian:bookworm-slim AS runtime
 WORKDIR /app
-
-# Install OpenSSL - it is dynamically linked by some of our dependencies
-# Install ca-certificates - it is needed to verify TLS certificates
-# when establishing HTTPS connections
 RUN apt-get update -y \
     && apt-get install -y --no-install-recommends openssl ca-certificates \
     # Clean up
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
-
 COPY --chown=app:app --from=builder /app/target/release/zero2prod zero2prod
 COPY --chown=app:app configuration configuration
-
 ENV APP_ENVIRONMENT production
-
+ENV DOCKER_CONTENT_TRUST=1
 ENTRYPOINT ["./zero2prod"]
